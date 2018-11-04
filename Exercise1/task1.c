@@ -36,17 +36,12 @@ void readValueFromFile() {
 }
 
 // Find the range between the max elements.
-L findMaxRange(int start, int end, int * indexStart, int * indexEnd) {
-  L m = 0L;
-  *indexStart = *indexEnd = start;
-  for (int i=start; i<=end; i++) {
-    if ( buildings[i] > m ) {
-      *indexStart = *indexEnd = i;
-      m = buildings[i];
-    }
-    else if ( buildings[i] == m ) { *indexEnd = i; }
-  }
-  return m;
+int findMax(int start, int end) {
+  L m = 0L; int maxIndex = 0;
+  for (int i=start; i<=end; i++) 
+    if ( buildings[i] > m ) m = buildings[(maxIndex = i)];
+    
+  return maxIndex;
 }
 
 L calculate(int left1, int right2) {
@@ -54,17 +49,17 @@ L calculate(int left1, int right2) {
   if (left1 == right2) return buildings[left1];
 
   int right1 = 0, left2 = 0;
-  L max = findMaxRange(left1, right2, &right1, &left2);
-  right1--;left2++;
+  int maxIndex = findMax(left1, right2);
+  right1 = maxIndex-1; left2 = maxIndex+1;
   
   // Charge the right side to MAX height.
-  L sum1 = max * (right2  - right1);
+  L sum1 = buildings[maxIndex] * (right2  - right1);
   if (left1 <= right1) {
     sum1 += calculate(left1, right1);
   }
   
   // Charge the left side to MAX height.
-  L sum2 = max * (left2-left1);
+  L sum2 = buildings[maxIndex] * (left2-left1);
   if (left2 <= right2 ){
     sum2 += calculate(left2, right2);
   }
