@@ -1,2 +1,11 @@
 *~
 *.zip
+*.txt
+Exercise1/*
+!Exercise1/*.c
+Exercise2/*
+!Exercise2/*.c
+Exercise3/*
+!Exercise3/*.c
+Exercise4/*
+!Exercise4/*.c
