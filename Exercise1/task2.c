@@ -50,82 +50,42 @@ double findIntersection(particle * a, particle * b){
   return m;
 }
 
-double globalMax=0, globalMin=1000000000;
-int checkOverlap (long t) {
-  double max=0, min = L;
-  
+int globalA=0, globalB=0;
+int checkOverlap (int d) {
+  double minA=1000000000, minB = 1000000000;
+  long speedA=0, speedB= 0;
   for(int i=0;i<n;i++) {
-    if (A[i]->startTime > t || max > L) break;
-    if(!A[i]->dead ) {
-      double dis = A[i]->speed*(t-A[i]->startTime);
-      max = (max<dis)?dis:max;
+    if(A[i]->startTime > minA ) break;
+    if(speedA < A[i]->speed && !A[i]->dead) {
+      double t = (double) (d/A[i]->speed) + A[i]->startTime;
+      if (minA>t) { speedA = A[i]->speed; minA = t; globalA = i+1;}
     }
   }
   for(int i=0;i<n;i++) {
-    if(B[i]->startTime > t || min < 0) break;
-    if(!B[i]->dead) {
-      double dis = L - B[i]->speed*(t-B[i]->startTime);
-      min = (min>dis)?dis:min;
+    if(B[i]->startTime > minB ) break;
+    if(speedB < B[i]->speed && !B[i]->dead) { //x = L - v(t-t_s)
+      double t = (double) ((L-d)/B[i]->speed) + B[i]->startTime;
+      if (minB>t) { speedB = B[i]->speed; minB = t; globalB = i+1;}
     }
   }
-  if (max>=min) {
-    globalMin = min;
-    globalMax = max;
+  if (minA>=minB) {
     return 1;
   }
   return 0;
 }
 
-int binarySearch(int left, int right, int (* fun) (long) ) {  
-  if (left == right) { return left;}  
+int binarySearch(int left, int right, int (* fun) (int) ) {  
+  if (left == right) { fun(left); return left;}  
   int mid = (left + right)/2;  
   if (fun(mid)) return binarySearch(left, mid, fun);  
   return binarySearch(mid+1,right, fun);  
 }
 
-void printFirstCollision(int *a, int n_a, int *b, int n_b){
-  int amin = a[0], bmin = b[0]; double min = findIntersection(A[a[0]], B[b[0]]);
-  for(int i=0;i<n_a;i++) {
-    for(int j=0;j<n_b;j++) {
-      double x = findIntersection(A[a[i]], B[b[j]]);
-      if (x < min && ((double) L/A[a[i]]->speed) + A[a[i]]->startTime >= B[b[j]]->startTime) {
-	amin = a[i]; bmin=b[j]; min=x;
-	//printf("AAAAAAAAAA\n");
-      }
-    }
-  }
-  printf("%d %d\n", amin+1, bmin+1);
-  A[amin]->dead = B[bmin]->dead = 1;
-}
-
-long prevCol = 0;
 void calculate() {
-  long t = binarySearch(0, 1<<31-1, checkOverlap);
-  //printf(">>%ld\n",t);
-  int indexA=0,indexB=0;
-  int tempA[100000], tempB[100000];
-  //printf("%f %f\n",min,max);
-  for(int i=0;i<n;i++) {
-    if (A[i]->startTime > t) break;
-    if(!A[i]->dead) {
-      double dis = A[i]->speed*(t-A[i]->startTime);
-      if (dis>=globalMin && dis<=globalMax) {
-	tempA[indexA]=i;indexA++;//printf("A: %d\n",i+1);
-      }
-    }
-  }
-  for(int i=0;i<n;i++) {
-    if(B[i]->startTime > t) break;
-    if(!B[i]->dead) {
-      double dis = L - B[i]->speed*(t-B[i]->startTime);
-      if (dis>=globalMin && dis<=globalMax) {
-	tempB[indexB]=i;indexB++;
-      }
-    }
-  }
-  //printf("---%d %d\n",indexA,indexB);
-  printFirstCollision(tempA, indexA, tempB, indexB);
-  prevCol = t-1;
+  binarySearch(0, L, checkOverlap);
+  printf("%d %d\n", globalA, globalB);
+  A[globalA-1]->dead = B[globalB-1]->dead = 1;
+  
 }
 
 int main() {
