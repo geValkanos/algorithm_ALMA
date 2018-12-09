@@ -7,6 +7,7 @@ TIMEOUT=1
 RED='\033[031m'
 GREEN='\033[032m'
 ORANGE='\033[033m'
+CYAN='\033[036m'
 NC='\033[0m'
 
 # Check if the number of arguments is correct.
@@ -28,9 +29,9 @@ then
 	    else
 		if [ $runExecutable = $correct_output ]
 		then
-		    echo -e "[${GREEN}Correct${NC}]" $runExecutable 
+		    echo -e "[${GREEN}Correct${NC}]" " ${CYAN}${testcase}${NC}:" $runExecutable 
 		else
-		    echo "[${RED}Wrong${NC}]" " ${ORANGE}${testcase}${NC} Correct answer:\n"$correct_output
+		    echo -e "[${RED}Wrong${NC}]" " ${ORANGE}${testcase}${NC} Correct answer:" $correct_output
 		fi
 	    fi
 	done
