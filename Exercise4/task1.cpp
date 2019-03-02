@@ -13,90 +13,71 @@ private:
   bool * is_topological_root;
   list<int> *connective_parts;
   int *strong_connective_components;
-  list<int> *adjastency_list;
+  list<int> *adjacent_list;
 public:
   // Main Constructor.
   Graph (int vertices): V(vertices) {
-    adjastency_list = new list<int>[V];
+    adjacent_list = new list<int>[V];
     strong_connective_components = new int[V];
     connective_parts = new list<int>[V];
     components = 0;
   }
   // Add edge to the graph.
   void addEdge (int v1, int v2) {
-    this->adjastency_list[v1].push_back(v2);
+    this->adjacent_list[v1].push_back(v2);
     this->E ++;
-    // cout << "added" << endl;
   }
+
   void fillOrder(int v, bool visited[], stack<int> &Stack) {
-    // Mark the current node as visited and print it
     visited[v] = true;
 
-    // Recur for all the vertices adjacent to this vertex
-    list<int>::iterator i;
-    for(i = adjastency_list[v].begin(); i != adjastency_list[v].end(); ++i)
-      if(!visited[*i])
-	fillOrder(*i, visited, Stack);
+    for(list<int>::iterator i = adjacent_list[v].begin(); i != adjacent_list[v].end(); ++i)
+      if(!visited[*i]) fillOrder(*i, visited, Stack);
 
-    // All vertices reachable from v are processed by now, push v
     Stack.push(v);
   }
 
-  // A recursive function to print DFS starting from v
   void DFSUtil(int v, bool visited[], int component, list<int> &connective_part, int * scc ) {
-    // Mark the current node as visited and print it
     visited[v] = true;
     connective_part.push_back(v);
     scc[v] = component;
-    // Recur for all the vertices adjacent to this vertex
-    list<int>::iterator i;
-    for (i = adjastency_list[v].begin(); i != adjastency_list[v].end(); ++i)
-      if (!visited[*i])
-	DFSUtil(*i, visited, component, connective_part, scc);
+
+    for (list<int>::iterator i = adjacent_list[v].begin(); i != adjacent_list[v].end(); ++i)
+      if (!visited[*i]) DFSUtil(*i, visited, component, connective_part, scc);
   }
 
   // Transpose Graph.
   Graph getTranspose() {
     Graph g(V);
     for (int v = 0; v < V; v++) {
-      // Recur for all the vertices adjacent to this vertex
-      list<int>::iterator i;
-      for(i = adjastency_list[v].begin(); i != adjastency_list[v].end(); ++i) {
-	g.adjastency_list[*i].push_back(v);
+      for(list<int>::iterator i = adjacent_list[v].begin(); i != adjacent_list[v].end(); ++i) {
+        g.adjacent_list[*i].push_back(v);
       }
     }
     return g;
   }
+
   // Strong Connective Components.
   void findComponents() {
     stack<int> Stack;
 
-    // Mark all the vertices as not visited (For first DFS)
     bool *visited = new bool[V];
     for(int i = 0; i < V; i++) visited[i] = false;
 
-    // Fill vertices in stack according to their finishing times
     for(int i = 0; i < V; i++)
-      if(visited[i] == false)
-	this->fillOrder(i, visited, Stack);
+      if(!visited[i]) this->fillOrder(i, visited, Stack);
 
-    // Create a reversed graph
     Graph gr = this->getTranspose();
 
-    // Mark all the vertices as not visited (For second DFS)
-    for(int i = 0; i < V; i++)
-      visited[i] = false;
+    for(int i = 0; i < V; i++) visited[i] = false;
 
-    // Now process all vertices in order defined by Stack
     while (Stack.empty() == false) {
-      // Pop a vertex from stack
       int v = Stack.top();
       Stack.pop();
 
-      // Print Strongly connected component of the popped vertex
       if (visited[v] == false) {
-	gr.DFSUtil(v, visited, this->components, connective_parts[ this->components ], this->strong_connective_components);
-	this->components++;
+        gr.DFSUtil(v, visited, this->components, connective_parts[ this->components ], this->strong_connective_components);
+        this->components++;
       }
     }
     this->is_topological_root = new bool[components];
@@ -108,13 +89,13 @@ public:
     for(list<int> * i = connective_parts; (*i).size() != 0; ++i) {
       // Iterate vertices of one connective component.
       for(list<int>::iterator j = (*i).begin(); j != (*i).end(); ++j) {
-	// Iterate neighbors of each vertex
-	for(list<int>::iterator k = this->adjastency_list[*j].begin(); k != this->adjastency_list[*j].end(); ++k) {
-	  // Check if the edge is not internal inside the component.
-	  if (strong_connective_components[*k] != strong_connective_components[*j]) {
-	    is_topological_root[ strong_connective_components[*k] ] = false;
-	  }
-	}
+        // Iterate neighbors of each vertex
+        for(list<int>::iterator k = this->adjacent_list[*j].begin(); k != this->adjacent_list[*j].end(); ++k) {
+          // Check if the edge is not internal inside the component.
+          if (strong_connective_components[*k] != strong_connective_components[*j]) {
+            is_topological_root[ strong_connective_components[*k] ] = false;
+          }
+        }
       }
     }
     int count = 0;
