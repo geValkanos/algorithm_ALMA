@@ -8,4 +8,4 @@ Exercise2/*
 Exercise3/*
 !Exercise3/*.c
 Exercise4/*
-!Exercise4/*.c
+!Exercise4/*.cpp
